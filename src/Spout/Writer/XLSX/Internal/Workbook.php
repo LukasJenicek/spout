@@ -3,6 +3,9 @@
 namespace Box\Spout\Writer\XLSX\Internal;
 
 use Box\Spout\Writer\Common\Internal\AbstractWorkbook;
+use Box\Spout\Writer\XLSX\Cell\CellWidthWriter;
+use Box\Spout\Writer\XLSX\Cell\XlsxCellWidthCalculator;
+use Box\Spout\Writer\XLSX\Cell\XlsxCellWidthWriter;
 use Box\Spout\Writer\XLSX\Helper\FileSystemHelper;
 use Box\Spout\Writer\XLSX\Helper\SharedStringsHelper;
 use Box\Spout\Writer\XLSX\Helper\StyleHelper;
@@ -83,7 +86,7 @@ class Workbook extends AbstractWorkbook
     public function addNewSheet()
     {
         $newSheetIndex = count($this->worksheets);
-        $sheet = new Sheet($newSheetIndex);
+        $sheet = new Sheet($newSheetIndex, new XlsxCellWidthWriter(new XlsxCellWidthCalculator()));
 
         $worksheetFilesFolder = $this->fileSystemHelper->getXlWorksheetsFolder();
         $worksheet = new Worksheet($sheet, $worksheetFilesFolder, $this->sharedStringsHelper, $this->shouldUseInlineStrings);

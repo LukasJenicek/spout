@@ -3,6 +3,7 @@
 namespace Box\Spout\Writer\Common;
 
 use Box\Spout\Common\Helper\StringHelper;
+use Box\Spout\Writer\Common\Cell\CellWidthWriter;
 use Box\Spout\Writer\Exception\InvalidSheetNameException;
 
 /**
@@ -33,14 +34,29 @@ class Sheet
     /** @var \Box\Spout\Common\Helper\StringHelper */
     protected $stringHelper;
 
+    /** @var bool */
+    protected $autoSize = false;
+
+    /** @var  CellWidthWriter */
+    protected $cellWidthWriter;
+
     /**
      * @param int $sheetIndex Index of the sheet, based on order in the workbook (zero-based)
+     * @param CellWidthWriter $cellWidthWriter
      */
-    public function __construct($sheetIndex)
+    public function __construct($sheetIndex, CellWidthWriter $cellWidthWriter)
     {
         $this->index = $sheetIndex;
+        $this->cellWidthWriter = $cellWidthWriter;
         $this->stringHelper = new StringHelper();
         $this->setName(self::DEFAULT_SHEET_NAME_PREFIX . ($sheetIndex + 1));
+    }
+
+    /**
+     * @return CellWidthWriter
+     */
+    public function getCellWidthWriter() {
+        return $this->cellWidthWriter;
     }
 
     /**
@@ -89,6 +105,25 @@ class Sheet
 
         return $this;
     }
+
+    /**
+     * @return boolean
+     */
+    public function isAutoSize()
+    {
+        return $this->autoSize;
+    }
+
+    /**
+     * @param boolean $autoSize
+     * @return Sheet
+     */
+    public function setAutoSize($autoSize)
+    {
+        $this->autoSize = $autoSize;
+        return $this;
+    }
+
 
     /**
      * Returns whether the given sheet's name is valid.

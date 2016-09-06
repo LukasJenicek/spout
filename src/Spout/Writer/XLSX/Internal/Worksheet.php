@@ -2,6 +2,7 @@
 
 namespace Box\Spout\Writer\XLSX\Internal;
 
+use Box\Spout\Autoloader\Psr4Autoloader;
 use Box\Spout\Common\Exception\InvalidArgumentException;
 use Box\Spout\Common\Exception\IOException;
 use Box\Spout\Writer\Common\Helper\CellHelper;
@@ -42,6 +43,7 @@ EOD;
     /** @var int Index of the last written row */
     protected $lastWrittenRowIndex = 0;
 
+
     /**
      * @param \Box\Spout\Writer\Common\Sheet $externalSheet The associated "external" sheet
      * @param string $worksheetFilesFolder Temporary folder where the files to create the XLSX will be stored
@@ -72,6 +74,7 @@ EOD;
     {
         $this->sheetFilePointer = fopen($this->worksheetFilePath, 'w');
         $this->throwIfSheetFilePointerIsNotAvailable();
+
 
         fwrite($this->sheetFilePointer, self::SHEET_XML_FILE_HEADER);
         fwrite($this->sheetFilePointer, '<sheetData>');
@@ -131,10 +134,16 @@ EOD;
         $rowIndex = $this->lastWrittenRowIndex + 1;
         $numCells = count($dataRow);
 
+
         $rowXML = '<row r="' . $rowIndex . '" spans="1:' . $numCells . '">';
 
-        foreach($dataRow as $cellValue) {
+        foreach($dataRow as $key => $cellValue) {
             $rowXML .= $this->getCellXml($rowIndex, $cellNumber, $cellValue, $style->getId());
+
+            if($this->externalSheet->isAutoSize()) {
+                $this->externalSheet->getCellWidthWriter()->addWidth($key, $cellValue);
+            }
+
             $cellNumber++;
         }
 
@@ -144,6 +153,7 @@ EOD;
         if ($wasWriteSuccessful === false) {
             throw new IOException("Unable to write data in {$this->worksheetFilePath}");
         }
+
 
         // only update the count if the write worked
         $this->lastWrittenRowIndex++;
@@ -196,8 +206,9 @@ EOD;
         if (!is_resource($this->sheetFilePointer)) {
             return;
         }
-
         fwrite($this->sheetFilePointer, '</sheetData>');
+
+        fwrite($this->sheetFilePointer, $this->externalSheet->getCellWidthWriter()->getCellWidthXml());
         fwrite($this->sheetFilePointer, '</worksheet>');
         fclose($this->sheetFilePointer);
     }
